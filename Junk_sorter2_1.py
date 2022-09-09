@@ -4,7 +4,6 @@ A simple junk sorter program. Full description will be added later.
 
 import sys
 import pathlib
-import os
 import shutil
 from constants import *
 
@@ -68,12 +67,13 @@ def check_new_names(dir_in, norm_name_obj):  # pathlib.Path, pathlib.Path
     if norm_name_obj.is_dir() or not norm_name_obj.suffix:
         norm_name = norm_name_obj.name  # name.ext or name
         norm_name = normalize(norm_name)  # str dir
-        obj_candidate = dir_in / norm_name
+        obj_candidate = pathlib.Path(dir_in).joinpath(norm_name)
     # elif norm_name_obj.is_file() and len(norm_name_obj.suffix) > 0:
     else:
         norm_name = norm_name_obj.name[:-len(norm_name_obj.suffix)]
         norm_name = normalize(norm_name)  # str file w/o ext
-        obj_candidate = dir_in / "".join([norm_name, norm_name_obj.suffix])
+        obj_candidate = pathlib.Path(dir_in).joinpath(
+            "".join([norm_name, norm_name_obj.suffix]))
     new_counter = 0
     while True:  # Is it better to use recursion? not now
         if obj_candidate.exists():  # norm_fs_obj.is_file() or norm_fs_obj.is_dir()/// symb link?
@@ -81,11 +81,11 @@ def check_new_names(dir_in, norm_name_obj):  # pathlib.Path, pathlib.Path
             # rechange number in filename, new name with number:
             norm_name = new_name(norm_name, new_counter)
             if norm_name_obj.is_file() and len(norm_name_obj.suffix) > 0:
-                obj_candidate = dir_in / \
-                    "".join([norm_name, norm_name_obj.suffix])
+                obj_candidate = pathlib.Path(dir_in).joinpath(
+                    "".join([norm_name, norm_name_obj.suffix]))
             else:  # dir or len(norm_name_obj.suffix) == 0
                 # if exist dots in name of directory (false suffix)
-                obj_candidate = dir_in / norm_name  # os.path.join
+                obj_candidate = pathlib.Path(dir_in).joinpath(norm_name)
         else:
             break
     if norm_name_obj.is_file() and norm_name_obj.suffix:
@@ -97,7 +97,7 @@ def check_new_names(dir_in, norm_name_obj):  # pathlib.Path, pathlib.Path
 def freeing_the_reserved_name_for_the_sorting_directory(main_directory):
     for item_category in data_base_of_extensions:  # sort all categories
         new_counter = 0
-        need_free_name = main_directory / item_category
+        need_free_name = pathlib.Path(main_directory).joinpath(item_category)
         if need_free_name.is_file():  # the existing file
             # looking for a new name for the file
             obj_candidate = pathlib.Path(str(need_free_name)+str(new_counter))
@@ -106,7 +106,8 @@ def freeing_the_reserved_name_for_the_sorting_directory(main_directory):
                     new_counter += 1  # new number for new name
                     # rechange number in dir-name, new name with adding number:
                     norm_name = new_name(obj_candidate.name, new_counter)
-                    obj_candidate = main_directory / norm_name
+                    obj_candidate = pathlib.Path(
+                        main_directory).joinpath(norm_name)
                 else:
                     break
             need_free_name.replace(obj_candidate)
@@ -116,23 +117,23 @@ def freeing_the_reserved_name_for_the_sorting_directory(main_directory):
 
 
 def simple_sorterer(file_to_sort, main_directory, simple_category):
-    target_dir = main_directory / simple_category
+    target_dir = pathlib.Path(main_directory).joinpath(simple_category)
     # ADD! rename file with "simple_category" name, if exist = def freeing_the_reserved_name_for_the_sorting_directory
     target_dir.mkdir(exist_ok=True)
     # if name for file is non-free? check_new_names...
     # for check and normalize..., # pathlib.Path, pathlib.Path to:
     free_name = check_new_names(target_dir, file_to_sort)
-    file_to_sort.replace(target_dir / free_name)
+    file_to_sort.replace(pathlib.Path(target_dir).joinpath(free_name))
 
 
 # pathlib.Path, pathlib.Path !!!!!!!!!!анотація типів
 def archives_sorterer(current_arch, main_directory):
-    target_dir = main_directory / "archives"
+    target_dir = pathlib.Path(main_directory).joinpath("archives")
     # ADD! rename file with "archives" name, if exist = def freeing_the_reserved_name_for_the_sorting_directory
     target_dir.mkdir(exist_ok=True)
     arch_dir = check_new_names(
-        target_dir, current_arch.parent / current_arch.name[:-len(current_arch.suffix)])
-    arch_dir = target_dir / arch_dir
+        target_dir, pathlib.Path(current_arch.parent).joinpath(current_arch.name[:-len(current_arch.suffix)]))
+    arch_dir = pathlib.Path(target_dir).joinpath(arch_dir)
     arch_dir.mkdir(exist_ok=True)
     try:
         shutil.unpack_archive(str(current_arch.absolute()),
@@ -159,7 +160,7 @@ def delete_empty_dir(dir_in):  # pathlib.Path
                 except:  # ... else if... what Error? and else?
                     # chek and normalize # pathlib.Path, pathlib.Path -> str: new_name_dir
                     new_name_dir = check_new_names(dir_in, fs_obj)
-                    fs_obj.replace(dir_in / new_name_dir)
+                    fs_obj.replace(pathlib.Path(dir_in).joinpath(new_name_dir))
 
 
 def start_cleaner(target_directory):  # string - user input at start
