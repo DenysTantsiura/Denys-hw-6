@@ -12,6 +12,8 @@ from constants import *
 def test_extensions(var_exts: str, current_fs_obj: pathlib.Path):
     '''
     to check file extension and filling file listings
+    incoming: the extension - string, the current file object - Path
+    out (return): None
     '''
     global unknown_extensions  # ??? in other program works fine without "global"
     global known_extensions  # ??? in other program works fine without "global"
@@ -34,6 +36,8 @@ def test_extensions(var_exts: str, current_fs_obj: pathlib.Path):
 def junk_scanner(dir_in: pathlib.Path):
     """
     run recursive listing of directories to check file extension and filling file listings to sort and normalize
+    incoming: the folder - Path
+    out (return): None
     """
     for fs_obj in dir_in.iterdir():  # all obj in dir
         if fs_obj.is_dir():  # if dirr
@@ -49,6 +53,8 @@ def junk_scanner(dir_in: pathlib.Path):
 def normalize(norm_name: str):
     """
     to normalized string with transliteration
+    incoming: File/folder object name - string, the current file object - Path
+    out (return): normalized name - string
     """
     normalized = ''
     for v_symbol in norm_name:
@@ -57,15 +63,22 @@ def normalize(norm_name: str):
     return str(normalized)  # new transliteration name (str out)
 
 
-# rechange number(add_cx) in filename(try_new_name)
 def new_name(try_new_name: str, add_cx: int):
+    """
+    rechange number(add_cx) in filename(try_new_name)
+    incoming: try_new_name - string, add_cx - int
+    out (return): new name - string
+    """
     return (".".join(try_new_name.split(".")[:-1]))[:-len(str(add_cx-1))] + str(
         add_cx) + '.' + try_new_name.split(".")[len(try_new_name.split("."))-1]
 
 
 def check_new_names(dir_in: pathlib.Path, norm_name_obj: pathlib.Path):
     '''checks for the existence of a file in a folder after normalized, 
-    and return str(free new_name)'''
+    and return str(free new_name)
+    incoming: dir_in - Path, norm_name_obj - Path
+    out (return): new name - string
+    '''
     if norm_name_obj.is_dir() or not norm_name_obj.suffix:
         norm_name = norm_name_obj.name  # name.ext or name
         norm_name = normalize(norm_name)  # str dir
@@ -97,7 +110,10 @@ def check_new_names(dir_in: pathlib.Path, norm_name_obj: pathlib.Path):
 
 
 def freeing_the_reserved_name_for_the_sorting_directory(main_directory: pathlib.Path):
-
+    '''freeing (rename existing) the reserved name for the sorting directory if the name already exists
+    incoming: main_directory - Path
+    out (return): None
+    '''
     for item_category in data_base_of_extensions:  # sort all categories
         new_counter = 0
         need_free_name = main_directory.joinpath(item_category)
@@ -117,7 +133,10 @@ def freeing_the_reserved_name_for_the_sorting_directory(main_directory: pathlib.
 
 
 def simple_sorterer(file_to_sort: pathlib.Path, main_directory: pathlib.Path, simple_category: str):
-
+    '''simple sorterer 
+    incoming: file_to_sort - Path, main_directory - Path, simple_category - str
+    out (return): None (replacing to new free name)
+    '''
     target_dir = main_directory.joinpath(simple_category)
     # ADD! rename file with "simple_category" name, if exist = def freeing_the_reserved_name_for_the_sorting_directory
     target_dir.mkdir(exist_ok=True)
@@ -128,7 +147,11 @@ def simple_sorterer(file_to_sort: pathlib.Path, main_directory: pathlib.Path, si
 
 
 def archives_sorterer(current_arch: pathlib.Path, main_directory: pathlib.Path):
-
+    """
+    Unpack and then delete each archive or report the wrong archive
+    incoming: current_arch - Path, main_directory - Path
+    out (return): False OR Unpack and then delete the archive
+    """
     target_dir = main_directory.joinpath("archives")
     # ADD! rename file with "archives" name, if exist = def freeing_the_reserved_name_for_the_sorting_directory
     target_dir.mkdir(exist_ok=True)
@@ -151,6 +174,8 @@ def archives_sorterer(current_arch: pathlib.Path, main_directory: pathlib.Path):
 def delete_empty_dir(dir_in: pathlib.Path):  # pathlib.Path
     """
     run recursive listing of directories to remove empty-dir or normalize, if else
+    incoming: dir_in - Path
+    out (return): None (try to delete the folder - Removal if it's empty and normalize name if else
     """
     for fs_obj in dir_in.iterdir():  # all obj in dir
         if fs_obj.is_dir():  # if dirr
@@ -170,6 +195,8 @@ def start_cleaner(target_directory: str):  # user input at start
     (all files and folders are normalized...
      but 
      Files whose extensions are unknown remain unchanged!)
+    incoming: target_directory - Path
+    out (return): None (many functions)
     """
     print('OK, let`s do it')
     directory = pathlib.Path(target_directory)
@@ -200,13 +227,13 @@ def start_cleaner(target_directory: str):  # user input at start
 
 def main():
     """
-    two options for launching the program
+    The main function checks the startup parameters and the presence of a folder and starts the sorting process ...
     """
     if len(sys.argv) < 2:
         print('The path of the folder to be cleaned is not specified')
         exit()
     path = sys.argv[1]
-    if not pathlib.Path(path).is_dir():
+    if not pathlib.Path(path).is_dir():  # pathlib.Path(path).exists()
         print(
             f'Path incorrect, no target directory specified. Checking "{path}"')
         exit()
@@ -214,4 +241,5 @@ def main():
 
 
 if __name__ == "__main__":
+    # Show that after MAIN function the code will be completed and nothing is needed after it
     exit(main())
